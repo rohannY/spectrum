@@ -10,4 +10,4 @@ Spectrum is an intuitive color palette generator that turns images into color sc
 
 **Tech Stack:**
 - React (Vite)
-- [extract-colors] (https://www.npmjs.com/package/extract-colors)
+- [extract-colors](https://www.npmjs.com/package/extract-colors)
