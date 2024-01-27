@@ -7,7 +7,7 @@ import { HashRouter as Router, Route, Routes } from "react-router-dom";
 function App() {
   return (
     <Router>
-      <div className="px-9">
+      <div className="px-9 font-inter">
         <Nav />
         <Routes>
           <Route path="/" element={<Main />} />
