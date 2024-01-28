@@ -42,11 +42,11 @@ export default function Custom() {
   };
 
   return (
-    <div className="x-auto w-full px-2.5 md:px-20 py-4 flex justify-between h-auto mx-auto">
+    <div className="x-auto w-full px-2.5 md:px-20 py-4 flex justify-between h-auto mx-auto max-w-[1600px]">
       <div className="flex flex-wrap w-full">
         <div
           id="image"
-          className="px-10 md:h-[70vh] border rounded-2xl border-[#3b3b3b] shadow-sm shadow-gray-600 w-full md:w-1/2 flex justify-center items-center"
+          className="px-10 h-[30vh] md:h-[70vh] border rounded-2xl border-[#3b3b3b] shadow-sm shadow-gray-600 w-full md:w-1/2 flex justify-center items-center"
         >
         
           {filePreview !== undefined ? (
@@ -67,7 +67,7 @@ export default function Custom() {
                     className="text-blue-400 hover:underline underline-offset-4 cursor-pointer"
                     onClick={handleSpanClick}
                   >
-                    select a file
+                    select a file{" "}
                   </span>
                   <input
                     type="file"
@@ -86,11 +86,11 @@ export default function Custom() {
           <div className="">
             <p className="text-center py-10">Generated Palatte</p>
 
-            <div className="flex flex-row flex-wrap p-10 place-content-evenly max-w-[600px] gap-4">
+            <div className="flex flex-row flex-wrap md:p-10 place-content-evenly max-w-[600px] gap-2 md:gap-4">
               {generatedColors.map((color, index) => (
                 <div className="flex flex-col" id="card">
                   <div
-                    className="w-24 h-32 rounded-2xl"
+                    className="w-20 h-28 md:w-24 md:h-32 rounded-2xl"
                     key={index}
                     style={{ backgroundColor: color.hex }}
                   ></div>
