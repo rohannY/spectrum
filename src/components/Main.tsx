@@ -50,7 +50,7 @@ export default function Main() {
                 >
                   <img src={image.url} className="max-h-56 max-w-[192px]" />
                   {hoveredCard === index && (
-                    <div className="flex flex-row items-center justify-center gap-2 absolute top-1/2 left-1/2 border border-[#e6e6e627] backdrop-blur-md min-w-28 min-h-12 transform -translate-x-1/2 -translate-y-1/2 rounded-xl text-sm">
+                    <div className="flex flex-row items-center justify-center gap-2 absolute top-1/2 left-1/2 border border-[#e6e6e627] backdrop-blur-2xl min-w-28 min-h-12 transform -translate-x-1/2 -translate-y-1/2 rounded-xl text-sm">
                       <img
                         src={showCopiedMessage ? tick : copy}
                         className="max-w-5"
@@ -70,7 +70,7 @@ export default function Main() {
                   <>
                     <button
                       data-color={image.colors.primary}
-                      className={`w-12 h-8 rounded-sm`}
+                      className={`w-12 h-8 rounded-sm border border-[#b2b2b25c]`}
                       style={{ backgroundColor: image.colors.primary }}
                       onMouseEnter={() =>
                         handleMouseEnter(index, image.colors.primary)
@@ -79,7 +79,7 @@ export default function Main() {
                       onClick={() => handleCopy(image.colors.primary)}
                     ></button>
                     <button
-                      className={`w-8 h-8 rounded-sm`}
+                      className={`w-8 h-8 rounded-sm border border-[#b2b2b25c]`}
                       style={{ backgroundColor: image.colors.secondary }}
                       onMouseEnter={() =>
                         handleMouseEnter(index, image.colors.secondary)
@@ -88,7 +88,7 @@ export default function Main() {
                       onClick={() => handleCopy(image.colors.secondary)}
                     ></button>
                     <button
-                      className={`w-4 h-8 rounded-sm`}
+                      className={`w-4 h-8 rounded-sm border border-[#b2b2b25c]`}
                       style={{ backgroundColor: image.colors.tertiary }}
                       onMouseEnter={() =>
                         handleMouseEnter(index, image.colors.tertiary)
