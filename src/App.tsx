@@ -99,9 +99,9 @@ function App() {
         </div>
 
         <div className="relative z-10 px-4 sm:px-6 lg:px-8">
-          <Nav />
+        <Nav />
           <AnimatedRoutes />
-        </div>
+      </div>
       </motion.div>
     </Router>
   );

@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { extractColors } from "extract-colors";
 import placeholder from "../assets/img.svg";
+import copyIcon from "../assets/copy.svg";
+import tick from "../assets/tick.svg";
 
 interface ColorData {
   hex: string;
@@ -21,6 +23,7 @@ export default function Custom() {
   const [generatedColors, setGeneratedColors] = useState<ColorData[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   const handleSpanClick = () => {
     if (fileInputRef.current) {
@@ -48,7 +51,6 @@ export default function Custom() {
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       await processFile(files[0]);
@@ -57,9 +59,10 @@ export default function Custom() {
 
   const processFile = async (file: File) => {
     setIsProcessing(true);
+    setGeneratedColors([]);
+    setCopiedIdx(null);
     const previewURL = URL.createObjectURL(file);
     setFilePreview(previewURL);
-
     try {
       const colors = await extractColors(previewURL);
       setGeneratedColors(colors);
@@ -70,137 +73,80 @@ export default function Custom() {
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+  const handleRemoveImage = () => {
+    setFilePreview(undefined);
+    setGeneratedColors([]);
+    setCopiedIdx(null);
   };
 
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const colorCardVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.4,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const buttonVariants = {
-    hover: { 
-      scale: 1.05,
-      transition: { duration: 0.2 }
-    },
-    tap: { 
-      scale: 0.95,
-      transition: { duration: 0.1 }
-    }
+  const handleCopy = async (hex: string, idx: number) => {
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 1200);
+    } catch {}
   };
 
   return (
-    <motion.div
-      className="min-h-screen py-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <motion.div className="min-h-screen py-8 relative flex flex-col items-center">
+      {/* Animated Accent */}
+      <motion.div
+        className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-purple-500/30 via-blue-400/20 to-pink-400/20 rounded-full blur-3xl z-0"
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 10, -10, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      />
       {/* Header */}
-      <motion.div 
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <h1 className="text-4xl md:text-6xl font-bold mb-4 gradient-text">
-          Custom Palette Generator
-        </h1>
-        <p className="text-lg text-white/70 max-w-2xl mx-auto">
-          Upload an image and extract beautiful color palettes automatically
-        </p>
-      </motion.div>
-
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
-          {/* Image Upload Section */}
-          <motion.div
-            variants={sectionVariants}
-            className="space-y-6"
-          >
-            <motion.div
-              className={`relative h-80 lg:h-96 rounded-2xl glass border-2 border-dashed transition-all duration-300 ${
-                isDragOver 
-                  ? 'border-purple-400 bg-purple-400/10' 
-                  : 'border-white/20 hover:border-white/40'
+      <div className="relative z-10 w-full">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 gradient-text">
+            Extract Colors from Image
+          </h1>
+          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            Upload or drag an image to generate a beautiful color palette instantly.
+          </p>
+        </div>
+        <div className="w-full max-w-4xl mx-auto flex flex-col gap-10 items-stretch">
+          {/* Upload/Preview Section */}
+          <div className="space-y-6">
+            <div
+              className={`relative h-80 rounded-2xl glass border-2 border-dashed transition-all duration-300 flex items-center justify-center ${
+                isDragOver ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/40'
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.3 }}
             >
               {filePreview ? (
-                <div className="w-full h-full flex justify-center items-center p-6">
-                  <motion.img
+                <div className="w-full h-full flex flex-col items-center justify-center p-4 relative">
+                  <img
                     src={filePreview}
                     alt="Preview"
-                    className="max-h-full max-w-full object-contain rounded-lg"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
+                    className="max-h-64 max-w-full object-contain rounded-xl shadow-lg border border-white/10"
                   />
+                  <button
+                    className="absolute top-3 right-3 px-3 py-1 rounded-lg bg-black/60 text-white text-xs hover:bg-black/80 transition"
+                    onClick={handleRemoveImage}
+                  >
+                    Remove
+                  </button>
                 </div>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                  <img src={placeholder} className="h-24 w-24 mx-auto mb-6 opacity-60" />
+                  <p className="text-lg font-medium mb-2">
+                    Drag & drop or click to upload
+                  </p>
+                  <p className="text-sm text-white/60 mb-4">
+                    PNG, JPG, JPEG, WEBP supported
+                  </p>
+                  <button
+                    onClick={handleSpanClick}
+                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-medium transition-colors text-white"
                   >
-                    <motion.img 
-                      src={placeholder} 
-                      className="h-24 w-24 mx-auto mb-6 opacity-60"
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                    <p className="text-lg font-medium mb-2">
-                      Drop your image here
-                    </p>
-                    <p className="text-sm text-white/60 mb-4">
-                      or click to browse files
-                    </p>
-                    <motion.button
-                      onClick={handleSpanClick}
-                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-medium transition-colors"
-                      variants={buttonVariants}
-                      whileHover="hover"
-                      whileTap="tap"
-                    >
-                      Choose File
-                    </motion.button>
-                  </motion.div>
+                    Choose File
+                  </button>
                 </div>
               )}
-              
               <input
                 type="file"
                 ref={fileInputRef}
@@ -208,92 +154,80 @@ export default function Custom() {
                 onChange={handleFileChange}
                 accept="image/*"
               />
-            </motion.div>
-
-            {/* Processing indicator */}
-            <AnimatePresence>
-              {isProcessing && (
-                <motion.div
-                  className="flex items-center justify-center gap-3 p-4 glass rounded-xl"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
+              {/* Processing spinner overlay */}
+              <AnimatePresence>
+                {isProcessing && (
                   <motion.div
-                    className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  />
-                  <span className="text-white/90">Processing image...</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Color Palette Section */}
-          <motion.div
-            variants={sectionVariants}
-            className="space-y-6"
-          >
+                    className="absolute inset-0 flex flex-col items-center justify-center glass z-20"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <motion.div
+                      className="w-10 h-10 border-4 border-purple-400 border-t-transparent rounded-full mb-4"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    <span className="text-white/90 font-medium">Extracting colors…</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+          {/* Palette Section */}
+          <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-2">Generated Palette</h2>
               <p className="text-white/60">
-                {generatedColors.length > 0 
-                  ? `${generatedColors.length} colors extracted` 
-                  : 'Upload an image to generate colors'
-                }
+                {generatedColors.length > 0
+                  ? `${generatedColors.length} colors extracted`
+                  : 'Upload an image to generate colors'}
               </p>
             </div>
-
-            <motion.div 
-              className="grid grid-cols-2 sm:grid-cols-3 gap-4"
-              variants={containerVariants}
-            >
-              {generatedColors.map((color, index) => (
+            <div className="flex flex-wrap gap-4 justify-center">
+              {generatedColors.map((color, idx) => (
                 <motion.div
-                  key={index}
+                  key={idx}
                   className="flex flex-col items-center"
-                  variants={colorCardVariants}
-                  whileHover={{ y: -5 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.07 }}
                 >
-                  <motion.div
-                    className="w-20 h-24 md:w-24 md:h-32 rounded-2xl shadow-lg border-2 border-white/20 cursor-pointer"
-                    style={{ backgroundColor: color.hex }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigator.clipboard.writeText(color.hex)}
-                  />
-                  <motion.span 
-                    className="px-2 pt-3 text-center text-white font-medium text-sm"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
+                  <div className="relative group">
+                    <button
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-full shadow-lg border-2 border-white/20 cursor-pointer transition-transform group-hover:scale-105 bg-white/10"
+                      style={{ backgroundColor: color.hex }}
+                      onClick={() => handleCopy(color.hex, idx)}
+                    >
+                      <span className="sr-only">Copy {color.hex}</span>
+                      <span className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <img src={copiedIdx === idx ? tick : copyIcon} className="w-5 h-5" alt="copy" />
+                      </span>
+                    </button>
+                    {copiedIdx === idx && (
+                      <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-1 rounded-lg shadow-lg">
+                        Copied!
+                      </span>
+                    )}
+                  </div>
+                  <span className="pt-3 text-center text-white font-medium text-sm select-all">
                     {color.hex}
-                  </motion.span>
+                  </span>
                 </motion.div>
               ))}
-            </motion.div>
-
-            {/* Action Buttons */}
-            <motion.div 
-              className="flex justify-center pt-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <motion.button
-                onClick={() => window.location.reload()}
-                className="px-8 py-4 rounded-xl glass border border-white/20 hover:border-purple-400 hover:text-purple-400 transition-all duration-300 font-medium"
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-              >
-                Start Over
-              </motion.button>
-            </motion.div>
-          </motion.div>
+            </div>
+            {/* Action Button */}
+            {filePreview && (
+              <div className="flex justify-center pt-6">
+                <button
+                  onClick={handleRemoveImage}
+                  className="px-8 py-4 rounded-xl glass border border-white/20 hover:border-purple-400 hover:text-purple-400 transition-all duration-300 font-medium text-white"
+                >
+                  Start Over
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>

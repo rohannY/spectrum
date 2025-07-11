@@ -4,7 +4,7 @@ import tick from "../assets/tick.svg";
 import copy from "../assets/copy.svg";
 import data from "../data/data.json";
 
-export default function Main() {
+export default function Main({ selectedColor }: { selectedColor: string | null }) {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
@@ -28,6 +28,11 @@ export default function Main() {
       console.error("Unable to copy to clipboard:", err);
     }
   };
+
+  // Filter palettes by selectedColor (primary)
+  const filteredImages = selectedColor
+    ? data.images.filter(img => img.colors.primary.toLowerCase() === selectedColor.toLowerCase())
+    : data.images;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -110,7 +115,7 @@ export default function Main() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           variants={containerVariants}
         >
-          {data.images.map((image, index) => (
+          {filteredImages.map((image, index) => (
             <motion.div
               key={index}
               className="group relative"
@@ -133,77 +138,59 @@ export default function Main() {
                     transition={{ duration: 0.3 }}
                   />
                   
-                  {/* Overlay on hover */}
-                  <AnimatePresence>
-                    {hoveredCard === index && (
-                      <motion.div
-                        className="absolute inset-0 bg-black/50 flex items-center justify-center"
-                        variants={overlayVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
-                      >
-                        <motion.div 
-                          className="flex items-center gap-3 px-4 py-3 glass rounded-xl border border-white/20"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                        >
-                          <motion.img
-                            src={showCopiedMessage ? tick : copy}
-                            className="w-5 h-5"
-                            animate={{ rotate: showCopiedMessage ? 360 : 0 }}
-                            transition={{ duration: 0.3 }}
-                          />
-                          <span className="font-medium text-white">
-                            {showCopiedMessage ? "Copied!" : hoveredColor}
-                          </span>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {hoveredCard === index && (
+                    <div className="flex flex-row items-center justify-center gap-2 absolute top-1/2 left-1/2 border border-[#e6e6e627] backdrop-blur-2xl min-w-28 min-h-12 transform -translate-x-1/2 -translate-y-1/2 rounded-xl text-sm bg-black/50">
+                      <img
+                        src={showCopiedMessage ? tick : copy}
+                        className="max-w-5"
+                      />
+                      <span className="font-medium text-m text-white">
+                        {showCopiedMessage ? "Copied" : hoveredColor}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Color Palette */}
                 <div className="p-4">
                   <div className="flex gap-2 justify-center">
-                    {image.colors ? (
-                      <>
+                {image.colors ? (
+                  <>
                         <motion.button
-                          data-color={image.colors.primary}
+                      data-color={image.colors.primary}
                           className="w-12 h-10 rounded-lg border-2 border-white/20 shadow-lg"
-                          style={{ backgroundColor: image.colors.primary }}
+                      style={{ backgroundColor: image.colors.primary }}
                           onMouseEnter={() => handleMouseEnter(index, image.colors.primary)}
                           onMouseLeave={handleMouseLeave}
-                          onClick={() => handleCopy(image.colors.primary)}
+                      onClick={() => handleCopy(image.colors.primary)}
                           variants={colorVariants}
                           whileHover="hover"
                           whileTap="tap"
                         />
                         <motion.button
                           className="w-8 h-10 rounded-lg border-2 border-white/20 shadow-lg"
-                          style={{ backgroundColor: image.colors.secondary }}
+                      style={{ backgroundColor: image.colors.secondary }}
                           onMouseEnter={() => handleMouseEnter(index, image.colors.secondary)}
                           onMouseLeave={handleMouseLeave}
-                          onClick={() => handleCopy(image.colors.secondary)}
+                      onClick={() => handleCopy(image.colors.secondary)}
                           variants={colorVariants}
                           whileHover="hover"
                           whileTap="tap"
                         />
                         <motion.button
                           className="w-6 h-10 rounded-lg border-2 border-white/20 shadow-lg"
-                          style={{ backgroundColor: image.colors.tertiary }}
+                      style={{ backgroundColor: image.colors.tertiary }}
                           onMouseEnter={() => handleMouseEnter(index, image.colors.tertiary)}
                           onMouseLeave={handleMouseLeave}
-                          onClick={() => handleCopy(image.colors.tertiary)}
+                      onClick={() => handleCopy(image.colors.tertiary)}
                           variants={colorVariants}
                           whileHover="hover"
                           whileTap="tap"
                         />
-                      </>
-                    ) : null}
-                  </div>
-                </div>
+                  </>
+                ) : null}
+              </div>
+            </div>
               </motion.div>
             </motion.div>
           ))}
@@ -211,4 +198,4 @@ export default function Main() {
       </div>
     </motion.div>
   );
-} 
+}
