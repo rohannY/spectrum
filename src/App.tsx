@@ -4,6 +4,7 @@ import { HashRouter as Router, Route, Routes, useLocation } from "react-router-d
 import Nav from "./components/Nav";
 import Main from "./components/Main";
 import Custom from "./components/Custom";
+import { useState } from "react";
 
 // Page transition component
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -20,27 +21,26 @@ function PageTransition({ children }: { children: React.ReactNode }) {
 }
 
 // Animated routes wrapper
-function AnimatedRoutes() {
+function AnimatedRoutes({ selectedColor }: { selectedColor: string | null }) {
   const location = useLocation();
-  
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <PageTransition>
-              <Main />
+              <Main selectedColor={selectedColor} />
             </PageTransition>
-          } 
+          }
         />
-        <Route 
-          path="/custom" 
+        <Route
+          path="/custom"
           element={
             <PageTransition>
               <Custom />
             </PageTransition>
-          } 
+          }
         />
       </Routes>
     </AnimatePresence>
@@ -48,9 +48,10 @@ function AnimatedRoutes() {
 }
 
 function App() {
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   return (
     <Router>
-      <motion.div 
+      <motion.div
         className="min-h-screen font-inter"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -60,48 +61,24 @@ function App() {
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <motion.div
             className="absolute top-1/4 left-1/4 w-2 h-2 bg-purple-400 rounded-full opacity-30"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -50, 0],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+            animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
             className="absolute top-3/4 right-1/4 w-1 h-1 bg-blue-400 rounded-full opacity-40"
-            animate={{
-              x: [0, -80, 0],
-              y: [0, 60, 0],
-            }}
-            transition={{
-              duration: 6,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2
-            }}
+            animate={{ x: [0, -80, 0], y: [0, 60, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           />
           <motion.div
             className="absolute top-1/2 left-1/2 w-1.5 h-1.5 bg-pink-400 rounded-full opacity-25"
-            animate={{
-              x: [0, 120, 0],
-              y: [0, 80, 0],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 4
-            }}
+            animate={{ x: [0, 120, 0], y: [0, 80, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 4 }}
           />
         </div>
-
         <div className="relative z-10 px-4 sm:px-6 lg:px-8">
-        <Nav />
-          <AnimatedRoutes />
-      </div>
+          <Nav selectedColor={selectedColor} onSelectColor={setSelectedColor} />
+          <AnimatedRoutes selectedColor={selectedColor} />
+        </div>
       </motion.div>
     </Router>
   );

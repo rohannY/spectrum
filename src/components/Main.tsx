@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import tick from "../assets/tick.svg";
 import copy from "../assets/copy.svg";
 import data from "../data/data.json";
@@ -22,7 +22,6 @@ export default function Main({ selectedColor }: { selectedColor: string | null }
   const handleCopy = async (color: string) => {
     try {
       await navigator.clipboard.writeText(color);
-      console.log("Color copied to clipboard:", color);
       setShowCopiedMessage(true);
     } catch (err) {
       console.error("Unable to copy to clipboard:", err);
@@ -44,7 +43,6 @@ export default function Main({ selectedColor }: { selectedColor: string | null }
       }
     }
   };
-
   const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.9 },
     visible: {
@@ -57,25 +55,9 @@ export default function Main({ selectedColor }: { selectedColor: string | null }
       }
     }
   };
-
   const colorVariants = {
-    hover: { 
-      scale: 1.1,
-      transition: { duration: 0.2 }
-    },
-    tap: { 
-      scale: 0.95,
-      transition: { duration: 0.1 }
-    }
-  };
-
-  const overlayVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { duration: 0.2 }
-    }
+    hover: { scale: 1.1, transition: { duration: 0.2 } },
+    tap: { scale: 0.95, transition: { duration: 0.1 } }
   };
 
   return (
