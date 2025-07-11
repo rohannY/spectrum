@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import tick from "../assets/tick.svg";
 import copy from "../assets/copy.svg";
 import data from "../data/data.json";
@@ -28,82 +29,186 @@ export default function Main() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const colorVariants = {
+    hover: { 
+      scale: 1.1,
+      transition: { duration: 0.2 }
+    },
+    tap: { 
+      scale: 0.95,
+      transition: { duration: 0.1 }
+    }
+  };
+
+  const overlayVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { duration: 0.2 }
+    }
+  };
+
   return (
-    <>
-    <p className="block lg:hidden text-sm text-center text-[#e7e7e77b]">For Better Experience, Use this site on Laptop/Desktop</p>
+    <motion.div
+      className="min-h-screen py-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Mobile warning */}
+      <motion.p 
+        className="block lg:hidden text-sm text-center text-white/60 mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        For Better Experience, Use this site on Laptop/Desktop
+      </motion.p>
 
-    <div className="x-auto w-full px-2.5 md:px-20 py-4 flex justify-between h-auto">
-      
-      <div className="flex flex-1">
-        
-        <div className="flex flex-wrap gap-5 place-content-evenly max-w-[1400px] mx-auto content-start">
+      {/* Header */}
+      <motion.div 
+        className="text-center mb-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <h1 className="text-4xl md:text-6xl font-bold mb-4 gradient-text">
+          Color Spectrum
+        </h1>
+        <p className="text-lg text-white/70 max-w-2xl mx-auto">
+          Discover beautiful color palettes from curated images. Click on colors to copy their hex codes.
+        </p>
+      </motion.div>
 
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          variants={containerVariants}
+        >
           {data.images.map((image, index) => (
-            <div
+            <motion.div
               key={index}
-              className="w-56 px-4 pt-4 pb-6 cursor-pointer hover:border-[0.1px] border-[#e6e6e627] rounded-xl flex flex-col items-center"
+              className="group relative"
+              variants={cardVariants}
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="h-56 flex flex-col items-center justify-center">
-                <div
-                  id="img"
-                  className="flex px-4 py-2 relative justify-center align-middle"
-                >
-                  <img src={image.url} className="max-h-56 max-w-[192px]" />
-                  {hoveredCard === index && (
-                    <div className="flex flex-row items-center justify-center gap-2 absolute top-1/2 left-1/2 border border-[#e6e6e627] backdrop-blur-2xl min-w-28 min-h-12 transform -translate-x-1/2 -translate-y-1/2 rounded-xl text-sm">
-                      <img
-                        src={showCopiedMessage ? tick : copy}
-                        className="max-w-5"
-                      />
-                      <span className="font-medium text-m">
-                        {showCopiedMessage ? "Copied" : hoveredColor}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div
-                id="colors"
-                className="flex gap-2 pt-2 justify-items-end mt-4"
+              <motion.div
+                className="relative overflow-hidden rounded-2xl glass border border-white/10 hover:border-white/30 transition-all duration-300"
+                whileHover={{ 
+                  boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+                }}
               >
-                {image.colors ? (
-                  <>
-                    <button
-                      data-color={image.colors.primary}
-                      className={`w-12 h-8 rounded-sm border border-[#b2b2b25c]`}
-                      style={{ backgroundColor: image.colors.primary }}
-                      onMouseEnter={() =>
-                        handleMouseEnter(index, image.colors.primary)
-                      }
-                      onMouseOut={handleMouseLeave}
-                      onClick={() => handleCopy(image.colors.primary)}
-                    ></button>
-                    <button
-                      className={`w-8 h-8 rounded-sm border border-[#b2b2b25c]`}
-                      style={{ backgroundColor: image.colors.secondary }}
-                      onMouseEnter={() =>
-                        handleMouseEnter(index, image.colors.secondary)
-                      }
-                      onMouseOut={handleMouseLeave}
-                      onClick={() => handleCopy(image.colors.secondary)}
-                    ></button>
-                    <button
-                      className={`w-4 h-8 rounded-sm border border-[#b2b2b25c]`}
-                      style={{ backgroundColor: image.colors.tertiary }}
-                      onMouseEnter={() =>
-                        handleMouseEnter(index, image.colors.tertiary)
-                      }
-                      onMouseOut={handleMouseLeave}
-                      onClick={() => handleCopy(image.colors.tertiary)}
-                    ></button>
-                  </>
-                ) : null}
-              </div>
-            </div>
+                {/* Image Container */}
+                <div className="relative h-64 overflow-hidden">
+                  <motion.img 
+                    src={image.url} 
+                    className="w-full h-full object-cover"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  {/* Overlay on hover */}
+                  <AnimatePresence>
+                    {hoveredCard === index && (
+                      <motion.div
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center"
+                        variants={overlayVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                      >
+                        <motion.div 
+                          className="flex items-center gap-3 px-4 py-3 glass rounded-xl border border-white/20"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                        >
+                          <motion.img
+                            src={showCopiedMessage ? tick : copy}
+                            className="w-5 h-5"
+                            animate={{ rotate: showCopiedMessage ? 360 : 0 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                          <span className="font-medium text-white">
+                            {showCopiedMessage ? "Copied!" : hoveredColor}
+                          </span>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Color Palette */}
+                <div className="p-4">
+                  <div className="flex gap-2 justify-center">
+                    {image.colors ? (
+                      <>
+                        <motion.button
+                          data-color={image.colors.primary}
+                          className="w-12 h-10 rounded-lg border-2 border-white/20 shadow-lg"
+                          style={{ backgroundColor: image.colors.primary }}
+                          onMouseEnter={() => handleMouseEnter(index, image.colors.primary)}
+                          onMouseLeave={handleMouseLeave}
+                          onClick={() => handleCopy(image.colors.primary)}
+                          variants={colorVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                        />
+                        <motion.button
+                          className="w-8 h-10 rounded-lg border-2 border-white/20 shadow-lg"
+                          style={{ backgroundColor: image.colors.secondary }}
+                          onMouseEnter={() => handleMouseEnter(index, image.colors.secondary)}
+                          onMouseLeave={handleMouseLeave}
+                          onClick={() => handleCopy(image.colors.secondary)}
+                          variants={colorVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                        />
+                        <motion.button
+                          className="w-6 h-10 rounded-lg border-2 border-white/20 shadow-lg"
+                          style={{ backgroundColor: image.colors.tertiary }}
+                          onMouseEnter={() => handleMouseEnter(index, image.colors.tertiary)}
+                          onMouseLeave={handleMouseLeave}
+                          onClick={() => handleCopy(image.colors.tertiary)}
+                          variants={colorVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                        />
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
-    </>
+    </motion.div>
   );
-}
+} 

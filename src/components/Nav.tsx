@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "../assets/icon.svg";
 import left from "../assets/left.svg";
@@ -27,8 +27,6 @@ export default function Nav() {
     }
   };
 
-  
-
   useEffect(() => {
     const handleScroll = () => {
       const slider = sliderRef.current as HTMLDivElement;
@@ -49,89 +47,175 @@ export default function Nav() {
     };
   }, []);
 
+  const navVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: { 
+      scale: 1.05,
+      transition: { duration: 0.2 }
+    },
+    tap: { 
+      scale: 0.95,
+      transition: { duration: 0.1 }
+    }
+  };
+
+  const tooltipVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { duration: 0.2 }
+    }
+  };
+
   return (
-    <div className="z-50 top-0 inset-x-0">
-      <header className="flex py-8 max-w-[1600px] place-content-evenly flex-wrap mx-auto">
-        <div className="x-auto w-full px-2.5 sm:px-20 md:px-20 flex justify-between space-x-8">
-          <div className="justify-start flex w-10">
+    <motion.div 
+      className="z-50 top-0 inset-x-0 sticky"
+      variants={navVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.header 
+        className="flex py-6 max-w-[1600px] mx-auto"
+        style={{ backdropFilter: "blur(20px)" }}
+      >
+        <div className="w-full px-4 sm:px-6 lg:px-8 flex justify-between items-center space-x-4">
+          {/* Logo */}
+          <motion.div 
+            className="flex justify-start"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <Link to="/">
-              <img src={logo} alt="logo" />
+              <motion.img 
+                src={logo} 
+                alt="logo" 
+                className="w-10 h-10"
+                whileHover={{ rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              />
             </Link>
-          </div>
-          <div className="justify flex min-w-0 relative z-0" id="slider">
-            {showLeftArrow && (
-              <div className="w-12 h-full absolute justify-start left-0 z-10 bg-gradient-to-r from-[#121212] via-[#121212] to-transparent flex items-center cursor-pointer">
-                <button onClick={slideLeft}>
-                  <img className="w-4 h-4 " src={left} />
-                </button>
-              </div>
-            )}
+          </motion.div>
 
-            {showRightArrow && (
-              <div className="w-12 h-full absolute justify-end right-0 z-10 bg-gradient-to-l from-[#121212] via-[#121212] to-transparent flex items-center cursor-pointer">
-                <button onClick={slideRight}>
-                  <img className="w-4 h-4" src={right} />
-                </button>
-              </div>
-            )}
+          {/* Color Palette Slider */}
+          <div className="flex-1 flex justify-center min-w-0 relative z-0" id="slider">
+            <AnimatePresence>
+              {showLeftArrow && (
+                <motion.div 
+                  className="w-12 h-full absolute left-0 z-10 bg-gradient-to-r from-black/50 via-black/30 to-transparent flex items-center cursor-pointer"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.button 
+                    onClick={slideLeft}
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    <img className="w-4 h-4" src={left} alt="Left" />
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {isCustom ? null : (
-              <div
-                className="hidden  space-x-5 items-center overflow-scroll no-scrollbar scroll-smooth"
+            <AnimatePresence>
+              {showRightArrow && (
+                <motion.div 
+                  className="w-12 h-full absolute right-0 z-10 bg-gradient-to-l from-black/50 via-black/30 to-transparent flex items-center cursor-pointer"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.button 
+                    onClick={slideRight}
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    <img className="w-4 h-4" src={right} alt="Right" />
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!isCustom && (
+              <motion.div
+                className="hidden md:flex space-x-3 items-center overflow-scroll no-scrollbar scroll-smooth max-w-md"
                 ref={sliderRef}
                 style={{ overflowX: "scroll", whiteSpace: "nowrap" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
               >
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-                <button className="h-10 px-3 border border-gray-500  rounded-xl">
-                  Gray
-                </button>
-              </div>
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <motion.button
+                    key={index}
+                    className="h-10 px-4 border border-white/20 rounded-xl glass hover:border-white/40 transition-all duration-300"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <span className="text-sm font-medium">Gray</span>
+                  </motion.button>
+                ))}
+              </motion.div>
             )}
           </div>
-          <div className="justify-end flex relative">
-            <Link
-              to="/custom"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseOut={() => setIsHovered(false)}
-              className="px-3 py-2 md:px-6 m:py-3 border rounded-xl cursor-pointer border-gray-500 hover:bg-zinc-100 hover:text-gray-800"
-            >
-              Custom
-            </Link>
 
-            {isHovered && (
-              <div className="z-10 absolute top-14 text-sm text-center w-[20em] px-5 py-2 bg-[#f2f2f214] opacity-100 backdrop-blur-sm text-[#f5f5f5df] rounded-lg border border-[#e6e6e627]">
-                <div className="">Generate Color Palette from Images</div>
-              </div>
-            )}
+          {/* Custom Button */}
+          <div className="flex justify-end relative">
+            <motion.div
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Link
+                to="/custom"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className="px-4 py-2 md:px-6 md:py-3 border rounded-xl cursor-pointer border-white/20 glass hover:border-white/40 hover:bg-white/10 transition-all duration-300 font-medium"
+              >
+                Custom
+              </Link>
+            </motion.div>
+
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div 
+                  className="absolute top-14 right-0 z-10 text-sm text-center w-64 px-4 py-3 glass rounded-lg border border-white/20"
+                  variants={tooltipVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  <div className="text-white/90">
+                    Generate Color Palette from Images
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-      </header>
-    </div>
+      </motion.header>
+    </motion.div>
   );
 }

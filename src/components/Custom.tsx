@@ -1,6 +1,7 @@
-import placeholder from "../assets/img.svg";
 import { useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { extractColors } from "extract-colors";
+import placeholder from "../assets/img.svg";
 
 interface ColorData {
   hex: string;
@@ -18,6 +19,8 @@ export default function Custom() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [filePreview, setFilePreview] = useState<string | undefined>(undefined);
   const [generatedColors, setGeneratedColors] = useState<ColorData[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSpanClick = () => {
     if (fileInputRef.current) {
@@ -27,91 +30,272 @@ export default function Custom() {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-
     if (file) {
-      const previewURL = URL.createObjectURL(file);
-      setFilePreview(previewURL);
+      await processFile(file);
+    }
+  };
 
-      try {
-        const colors = await extractColors(previewURL);
-        setGeneratedColors(colors);
-      } catch (error) {
-        console.error(error);
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await processFile(files[0]);
+    }
+  };
+
+  const processFile = async (file: File) => {
+    setIsProcessing(true);
+    const previewURL = URL.createObjectURL(file);
+    setFilePreview(previewURL);
+
+    try {
+      const colors = await extractColors(previewURL);
+      setGeneratedColors(colors);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
       }
     }
   };
 
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const colorCardVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: { 
+      scale: 1.05,
+      transition: { duration: 0.2 }
+    },
+    tap: { 
+      scale: 0.95,
+      transition: { duration: 0.1 }
+    }
+  };
+
   return (
-    <div className="x-auto w-full px-2.5 md:px-20 py-4 flex justify-between h-auto mx-auto max-w-[1600px]">
-      <div className="flex flex-wrap w-full">
-        <div
-          id="image"
-          className="px-10 h-[30vh] md:h-[70vh] border rounded-2xl border-[#3b3b3b] shadow-sm shadow-gray-600 w-full md:w-1/2 flex justify-center items-center"
-        >
-        
-          {filePreview !== undefined ? (
-            <div className="w-full h-full flex justify-center">
-              <img
-                src={filePreview}
-                alt="Preview"
-                className="p-10 h-auto max-h-full max-w-full object-contain"
-              />
-            </div>
-          ) : (
-            <div className="py-10 md:px-10 h-full w-full max-w-lg align-middle text-center justify-center flex flex-col">
-              <div className="flex flex-col items-center">
-                <img src={placeholder} className="h-32 w-32" />
-                <p className="px-5 text-sm md:px-10">
-                  Drag and drop files here or{" "}
-                  <span
-                    className="text-blue-400 hover:underline underline-offset-4 cursor-pointer"
-                    onClick={handleSpanClick}
-                  >
-                    select a file{" "}
-                  </span>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: "none" }}
-                    onChange={handleFileChange}
-                  />
-                  from your computer
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+    <motion.div
+      className="min-h-screen py-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header */}
+      <motion.div 
+        className="text-center mb-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <h1 className="text-4xl md:text-6xl font-bold mb-4 gradient-text">
+          Custom Palette Generator
+        </h1>
+        <p className="text-lg text-white/70 max-w-2xl mx-auto">
+          Upload an image and extract beautiful color palettes automatically
+        </p>
+      </motion.div>
 
-        <div className="w-full md:w-1/2 px-5 md:px-20">
-          <div className="">
-            <p className="text-center py-10">Generated Palatte</p>
-
-            <div className="flex flex-row flex-wrap md:p-10 place-content-evenly max-w-[600px] gap-2 md:gap-4">
-              {generatedColors.map((color, index) => (
-                <div className="flex flex-col" id="card">
-                  <div
-                    className="w-20 h-28 md:w-24 md:h-32 rounded-2xl"
-                    key={index}
-                    style={{ backgroundColor: color.hex }}
-                  ></div>
-                  <span className="px-2 pt-3 text-center text-white font-medium text-md">
-                    {color.hex}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-center py-10">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-8 py-4 rounded-xl border bg-[#1e1e1e] hover:border-emerald-400 hover:text-emerald-400"
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Image Upload Section */}
+          <motion.div
+            variants={sectionVariants}
+            className="space-y-6"
+          >
+            <motion.div
+              className={`relative h-80 lg:h-96 rounded-2xl glass border-2 border-dashed transition-all duration-300 ${
+                isDragOver 
+                  ? 'border-purple-400 bg-purple-400/10' 
+                  : 'border-white/20 hover:border-white/40'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
             >
-              Start Over
-            </button>
-          </div>
+              {filePreview ? (
+                <div className="w-full h-full flex justify-center items-center p-6">
+                  <motion.img
+                    src={filePreview}
+                    alt="Preview"
+                    className="max-h-full max-w-full object-contain rounded-lg"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <motion.img 
+                      src={placeholder} 
+                      className="h-24 w-24 mx-auto mb-6 opacity-60"
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <p className="text-lg font-medium mb-2">
+                      Drop your image here
+                    </p>
+                    <p className="text-sm text-white/60 mb-4">
+                      or click to browse files
+                    </p>
+                    <motion.button
+                      onClick={handleSpanClick}
+                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-medium transition-colors"
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      Choose File
+                    </motion.button>
+                  </motion.div>
+                </div>
+              )}
+              
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+            </motion.div>
+
+            {/* Processing indicator */}
+            <AnimatePresence>
+              {isProcessing && (
+                <motion.div
+                  className="flex items-center justify-center gap-3 p-4 glass rounded-xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <motion.div
+                    className="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span className="text-white/90">Processing image...</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Color Palette Section */}
+          <motion.div
+            variants={sectionVariants}
+            className="space-y-6"
+          >
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2">Generated Palette</h2>
+              <p className="text-white/60">
+                {generatedColors.length > 0 
+                  ? `${generatedColors.length} colors extracted` 
+                  : 'Upload an image to generate colors'
+                }
+              </p>
+            </div>
+
+            <motion.div 
+              className="grid grid-cols-2 sm:grid-cols-3 gap-4"
+              variants={containerVariants}
+            >
+              {generatedColors.map((color, index) => (
+                <motion.div
+                  key={index}
+                  className="flex flex-col items-center"
+                  variants={colorCardVariants}
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.div
+                    className="w-20 h-24 md:w-24 md:h-32 rounded-2xl shadow-lg border-2 border-white/20 cursor-pointer"
+                    style={{ backgroundColor: color.hex }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigator.clipboard.writeText(color.hex)}
+                  />
+                  <motion.span 
+                    className="px-2 pt-3 text-center text-white font-medium text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    {color.hex}
+                  </motion.span>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Action Buttons */}
+            <motion.div 
+              className="flex justify-center pt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <motion.button
+                onClick={() => window.location.reload()}
+                className="px-8 py-4 rounded-xl glass border border-white/20 hover:border-purple-400 hover:text-purple-400 transition-all duration-300 font-medium"
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                Start Over
+              </motion.button>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
